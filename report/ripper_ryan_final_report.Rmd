@@ -1,0 +1,135 @@
+---
+  title: "Socioeconomic and Geographic Factors and the Relationship to Hospital Pricing: Final Report"
+  subtitle: "Data Science I: Foundations - Fall 2021 - Georgetown University"
+  author: "Ryan Ripper"
+  date: 12/16/2021 
+  output: 
+    html_document:
+      css: style.css
+---
+
+#### __Word Count__: `r as.integer(sub("(\\d+).+$", "\\1", system(sprintf("wc -w %s", knitr::current_input()), intern = TRUE)))`
+
+#### __Github Repository__: https://github.com/ryanripper/project_ppol564_fall2021
+
+### __*1. Introduction*__
+
+As of late, healthcare pricing has become a much-discussed topic as the Centers for Medicare and Medicaid Services (CMS) has introduced regulations mandating hospitals across the United States to publish corresponding procedural pricing. The publication of pricing for healthcare providers empowers the "shopper," the American citizen, to evaluate which hospital offers the service that best fits their individual economic situation.^[Centers for Medicare & Medicaid Services. (2020, October 29). Press release CMS completes historic price transparency initiative. CMS. Retrieved November 1, 2021, from https://www.cms.gov/newsroom/press-releases/cms-completes-historic-price-transparency-initiative.] This wealth of data introduced to the general public can potentially give insight to pricing schedules, possibly accounting for a hospital's geographic and surrounding demographic considerations. In this project, we have attempted to build a machine learning model to predict healthcare pricing for a specific common procedure that has been desginated as "shoppable" by CMS. We will briefly discuss the background regarding hospital pricing with respect to the CMS mandates along with a discussion of the data collected and used to build our model. Ultimately, we will analyze the results of our model's predictive power and implications to further develop our findings.
+
+### __*2. Problem Statement and Background*__
+
+The American consumer has the expectation to determine which good best aligns with their socioeconomic situation and also which good they would ultimately prefer. These expectations have stirred the ever unchaging healthcare environment to evolve to meet today's standard of empowering the shopper with information. As the Centers for Medicare and Medicaid services has mandated for hospitals to publish their prices made readily accessible to patients, health systems have attempted to bridge the gap between healthcare costs and prices.^[HealthCatalyst. (2021, April 8). Healthcare Price Transparency: Understanding the Cost-Pricing Relationship. HealthCatalyst. Retrieved December 8, 2021, from https://www.healthcatalyst.com/insights/healthcare-price-transparency-aligning-cost-price/.]
+
+Price Transparency was first introduced to the American policy world as a result of an Executive Order published by Donald Trump in October of 2020 where every hospital was mandated to meet the requirements by the start of the 2021 calendar year.^[Centers for Medicare & Medicaid Services. (2020, October 29). Press release CMS completes historic price transparency initiative. CMS. Retrieved November 1, 2021, from https://www.cms.gov/newsroom/press-releases/cms-completes-historic-price-transparency-initiative.] Donald Trump's effort to solve "longstanding problems in our healthcare system" was built off of previous CMS efforts to promote price and quality transparency.^[Centers for Medicare & Medicaid Services. (2020, October 29). Press release CMS completes historic price transparency initiative. CMS. Retrieved November 1, 2021, from https://www.cms.gov/newsroom/press-releases/cms-completes-historic-price-transparency-initiative.] However, because of the recently established regulations to publish healthcare pricing, research has analyzed the effect of the mandate itself on pricing and not the implications of how prices have been set.^[Policy & Medicine. (2020 August, 26). New Research Paper Indicates Price Transparency May Not Equate to Lower Prices. Policy & Medicine. Retrieved December 10, 2021, from https://www.policymed.com/2020/09/new-research-paper-indicates-price-transparency-may-not-equate-to-lower-prices.html.]
+
+Thus, we aim to determine if there exist indicators that predict hospital pricing. More specifically, taking into consideration demographic and geographic variables associated with healthcare providers and ultimately seeing if these indicators can give us insight to pricing mechanisms or if there are relationships between socioeconomic and location factors in determining prices.
+
+Below are several questions we aim to consider in our analysis:
+
+1. Do hospitals specifically factor in income when deciding how much to charge for a specific service?
+2. Do services vary in cost across locales based on differing or similar demographics?
+
+### __*3. Data*__
+
+In order to address our above questions, we aim to collect data to perform our analysis and construct a machine learning model.
+
+With respect to which hospitals we will consider in our analysis, we limit our analysis to hospitals within California instead of considering hospitals across the United States. We choose California as a valid sample of the entire United States as the state varies widely similar to the nation. From the North to the South and the East to the West, California varies considerably by every measure, from rural to highly urbanized locales. Thus, we identify hospitals in California as our unit of observation.
+
+#### __*United States Census Bureau*__
+
+We collected socioeconomic factors to include in our model made available by the United States Census Bureau.^[Bureau, U. S. C. (2021, October 12). American Community Survey (ACS). Census.gov. Retrieved November 1, 2021, from https://www.census.gov/programs-surveys/acs.] We considered the Census Bureau's "Income in the Past 12 Months (in 2019 Inflation-Adjusted Dollars)" table where we identified observations that have a California ZIP Code using results we obstained from the California state government website listing all ZIP Codes in the state.^[CA.GOV (2019, October 23). County and Zip Code References. CA.GOV. Retrieved November 1, 2021, from https://data.ca.gov/dataset/county-and-zip-code-references.]
+
+#### __*American Hopsital Directory*__
+
+To collect hospital pricing data in California, we employed data wrangling techniques to first collect a list of hospitals across the state. We leveraged the American Hospital Directory (AHD) website to collect a list of all hospitals in California and their associated ZIP Codes which we will use as our location identifier.^[American Hospital Directory - information about hospitals from public and private data sources including MedPAR, OPPS, hospital cost reports, and other CMS files. (n.d.). Retrieved November 1, 2021, from https://www.ahd.com/.]
+
+Collecting data from the American Hospital Directory was difficult since the website limits data scraping techniques in order to avoid automation leveraging their subscription-based system. Thus, when we did scrap the AHD website, we used traditional data scraping techniques while including random wait times to deceive the AHD website into believing our interaction with the website is not automated.
+
+#### __*Hospital Pricing*__
+
+Our proposed outcome of interest is a dollar amount for a particular healthcare procedure. We outline the steps we took to collect the outcome.
+
+Our initial aim to collect pricing data was to navigate to each hospital's webpage to collect hospital pricing as mandated by CMS. However, the extremely differing ways in which hospitals publish their data makes it incredibly difficult to automate the process of scraping each website, downloading the corresponding machine-readable files with pricing information, and then parsing each of these varying files to collect the pricing information we need.
+
+In order to combat this highly complicated process that would ultimately necessitate manual intervention, we instead considered the data resources collected by the Department of Health Care Access and Information (HCAi), formerly known as the Office of Statewide Health Planning and Development (OSHPD), for the state of California.^[Department of Health Care Access and Information CA.GOV. Hospital Chargemasters. CA.GOV. Retrieved December 3, 2021 from https://hcai.ca.gov/data-and-reports/cost-transparency/hospital-chargemasters/.] The HCAi requires each hospital to submit a list of all billable services and items to a patient or a patient's health insurance provider. This collected information for every hospital in California is subsequently published on the California state website for download by year. We were able to write a script to read through each hospital's list of billable services and collect the pricing information for a specific service, denoted by a corresponding Healthcare Common Procedure Coding System (HCPCS) code.
+
+For our analysis, we originally proposed using the service associated with the HCPCS code 45380, a colonoscopy with biopsy. However, a colonoscopy is traditionally charged to the patient and insurance company not with just the service itself but with ancillary charges. For example, a colonoscopy would be billed with the anesthesiolgy charges. Since the HCAi pricing data is published by the individual billable item or service, we instead considered a service that does not have any "add-on" charges, HCPCS code 70450, a computed tomography (CT) of the head or brain, for calendar year 2019 to match the results from the Census Bureau.
+
+#### __*Data Collection Results*__
+
+We have collected the following variables to factor into our analysis:
+
+1. Hospital Full Name
+2. Hospital ZIP Codes
+3. Hospital Website
+4. Hospital Line Charge for 70450 (Computed Tomography of Head or Brain)
+5. Mean Household Income of Hospital ZIP Code
+6. Median Household Income of Hospital ZIP Code
+
+With respect to issues with the data, there is a limited number of hospitals in California, thus limiting the total number of observations we can include in our analysis. Additionally, we had trouble collecting specific pricing for each hospital in California as a a result of varied publishing tactics to report prices to the HCAi. The limited number of hospitals in California in conjunction with the difficulty to collect all pricing data will cause additional observations in our data to be missing, thus decreasing the total number of observations that we will use to determine the best-fitting machine learning model.
+
+### __*4. Analysis*__
+
+We will now describe the methods and tools we explored in our project.
+
+#### __*Data Exploration*__
+
+We begin by exploring the data we collected, where we explore the split training data to avoid over-fit with our best-fitting model.
+
+First, we consider the independent variables that we will factor into our machine-learning models and see if they require any form of pre-processing to accurately work in our modeling framework.
+
+![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_1.png)
+
+From Figure 1, we observe the distributions of the two continuous, independent variables, Mean Household Income by ZIP Code and Median Household Income by ZIP Code. We observe a similar distribution for both variables where we see a right-skew to the household income values. Because of these right-skewed distributions, we consider log transforming the income variables.
+
+![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_2.png)
+
+From Figure 2, we observe the distributions of the logged-continuous, independent variables, Mean Household Income by ZIP Code and Median Household Income by ZIP Code. Once we log transformed our continuous, independent variables, we now observe symmetrical distributions. Since they are symmetric, we will not need to convert these variables into categorical ones where we would have needed to divide the distribution into several buckets and then place each observation into the corresponding bucket.
+
+We now analyze our geographic variable, the associated ZIP Code of each hospital, using the below figure.
+
+![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_3.png)
+
+From Figure 3, we observe the distribution of ZIP Codes of hospitals across California we have collected. We observe that a majority of the ZIP Codes only have one hospital within the corresponding boundaries where only several, specifically 92307 and 95823, have more than two hospitals within the ZIP Code boundaries. ZIP code 92307 is located within San Bernadino County, encompassing a large portion of Southern California. ZIP Code 95823 is located within Sacramento County. We would expect multiple hospitals to be located in these particular ZIP Codes since they encompass large portions of the state with significant populations. It is worrying that a majority of the ZIP Codes in our data only have one hospital, potentially causing our model to lose predictive power. Since ZIP Code is not a continuous variable nor is it an ordinal variable, we must convert all ZIP Codes in our data to categorical variables where we consider the ZIP Code 90015 as our reference against every other ZIP Code.
+
+#### __*Modeling*__
+
+Once we have analyzed our independent variables that will be used to determine hospital pricing, our dependent, continuous variable, and prepocessed all variables accordingly, we built a best-performing machine learning model.
+
+In order to obtain a best-peforming machine learning model, we employ the "sci-kit" learn module in Python to develop a pipeline.^[Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python Journal of Machine Learning Research, 12, 2825–2830.] A pipeline automates our machine learning workflow where we factor in a collection of classifiers and tune the associated parameters with each classifier, cross validate our results, and return the best performing model with the corresponding tuning parameters. The cross validating step is a resampling method that collects a portion of our data to test and train a model given a number of iterations. For our pipeline, we considered five iterations upon cross validation.
+
+We included five classifiers to our machine learning pipeline:
+
+1. __Linear Model Classifier__ - Describes a response variable in terms of a linear combination of predictor variables
+2. __Bagging Decision Tree Classifier__ - Takes many training sets from the data, builds separate trees on each training set, averages across the predictions from each tree
+3. __K-Nearest Neighbors Classifier__ - Assumes similar observations exist in close proximity, captures the idea of similarity
+4. __Decision Tree Classifier__ - Classifies observations by splitting them depending on a specific decision criteria
+5. __Random Forest Classifier__ - Constructs several decision trees and outputs the mean of the classes as the prediction of all the trees
+
+To determine which model would be the best-performing to fit our training data, we employed the mean-squared error metric. Mean-squared error measures the average of the squares of the errors. Our machine learning pipeline evaluates which model and corresponding tuning parameters has the least mean-squared error.
+
+### __*5. Results*__
+
+The model that performed the best in our analysis given our considered metric was the K-Nearest Neighbors model with the tuning parameter of fifty neighbors. In the following discussion, we will seek to understand the implications of our model and the corresponding results to hopefully answer our initial research questions.
+
+Upon observing the results from our best performing model, we obtained worrisome results. Specifically, we obtained an incredibly large mean out-of-sample error (-3,268,181.31), a large mean-squared error (1,819,483.47), and (surprisingly) a negative R-squared value ($R^2$ = -0.04).
+
+We address the negative $R^2$ value. Since we used the sklearn module when performing our analysis, the $R^2$ score may be negative where it need not be the square of a quantity R. By definition, $R^2$ is the comparison of a model's fit to a model fitting a single constant, both by minimizing a squared loss, as we did in our analysis. Since we are performing cross-validation with left-out data, the mean of the test data could be significantly different from the mean of the training data. With such a difference between test and training data, we could cause a higher value of squared error of the prediction values versus simply predicting the mean of the test data, which will not necessarily give us any insight into pricing at the individual hospital. Thus, we could ultimately obtain a negative $R^2$, as is the case for this research. Ultimately, our best model may necessarily be over-fitting the data where our independent variables do not explain healthcare pricing at all.
+
+![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_4.png)
+
+In Figure 4, we see the relationship between the observed prices against the predicted prices for hospitals collected across California. Even though we did observe a negative $R^2$ value, we do observe a positive relationship between the observed and predicted values for pricing a computed tomography of the head or brain. Upon further visual analysis of the figure, we observe that the relationship is relatively week but we do see a relationship. This could be a signifier to further our research by including additional observations and factors to include into our models. We also observe the points across the scatter plot are relatively random, potentially giving us better insight into why our model could have over-fit our test data where the predictors do not give insight to the outcome.
+
+Even though our results were inconclusive since our best-fitting model has no predictive power, we can address our original research questions. It does seem that income does not have a decisive effect on hospital pricing. In addition, it seems pricing for a service has no relation with our included factors, regardless of a hospital's physical location and corresponding demographic considerations.
+
+Even though it would theoretically make sense for a hospital to take the ability of a patient to afford a service into consideration when setting prices, it seems that hospitals do not do so and set prices using some other means. Hospitals could instead take into account internal considerations like revenue, patient volume, or the actual cost of care.
+
+### __*6. Discussion*__
+
+We had originally defined success of this project as reaching a point where we have collected data, joined data together to analyze at least three socio-economic factors, performed statistical analysis, and prepared visualizations to observe potential relationships between healthcare pricing and demographics. We have accomplished all of these goals as previously set forth.
+
+Even though the results of the project were not conclusive in the slightest nor gave particular insight to determining relationships between hospital pricing and other variables, we can ultimately say there might not be any predictors that help us determine pricing for a specific service given additional hospital specific considerations. Healthcare pricing may as well be dictated by a random process where prices are set regardless of a patient's socioeconomic situation.
+
+To further develop the analysis as performed in this project, we propose considering additional procedures and the associated prices where we can run additional models and see if our factors can better predict pricing for those services. Additionally, we propose to consider additional hospitals across the United States. Even though California does have a significant number of hospitals, we would be able to include an order of magnitude more hospitals to our models to determine if we can indeed observe relationships.
+
+Price Transparency is the advent of healthcare pricing change and analysis, pushing the United States and its citizens to better understand care and the associated costs.
