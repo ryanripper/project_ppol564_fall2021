@@ -53,17 +53,17 @@ OSHPD_list.csv  +  OSHPD_ZipCode_lookup.csv  →  OSHPD_ZipCode_list.csv
 - Missingness inspection with `missingno`
 - Log transformation of mean and median income (both are right-skewed; the logs are symmetric, so no bucketing into categoricals was needed)
 - ZIP Code one-hot encoded as a categorical, with 90015 as the reference level
-- 75/25 train/test split (`random_state=202112`), then a `GridSearchCV` pipeline — `MinMaxScaler` preprocessing feeding a model slot — over five estimators: **LinearRegression**, **BaggingRegressor**, **KNeighborsRegressor**, **DecisionTreeRegressor**, and **RandomForestRegressor**, cross-validated with 5-fold `KFold` and selected on mean squared error
+- 75/25 train/test split (`random_state=202112`), then a `GridSearchCV` pipeline — `MinMaxScaler` preprocessing feeding a model slot — over five estimators: **LinearRegression**, **BaggingRegressor**, **KNeighborsRegressor**, **DecisionTreeRegressor**, and **RandomForestRegressor** (all seeded with `random_state=202112`), cross-validated with 5-fold `KFold` and selected on mean squared error
 
 ## Results
 
-The best-performing model was **K-nearest neighbors with k=50** — and it had no predictive power:
+**No model had any predictive power — all five estimators scored within a rounding error of one another, i.e., none did better than predicting the mean.** With every estimator now seeded (`random_state=202112`), the grid search reproducibly selects a depth-2 decision tree, but the "winner" is a coin flip among ties and carries no substantive meaning. (The originally reported best model, KNN with k=50, was an artifact of unseeded tree/bagging estimators; its scores were indistinguishable: CV −3,268,181, MSE 1,819,483, R² −0.04.)
 
 | Metric | Value |
 | --- | --- |
-| Mean out-of-sample (CV) score | −3,268,181.31 |
-| Mean squared error | 1,819,483.47 |
-| R² | −0.04 |
+| Mean out-of-sample (CV) score | −3,268,225.54 |
+| Mean squared error | 1,797,816.19 |
+| R² | −0.03 |
 
 The negative R² is not a bug. In scikit-learn, R² compares a model's fit against a fit to a single constant, and with cross-validated held-out data the test mean can differ substantially from the training mean — enough that predicting the mean beats the model. The predicted-vs-observed scatter (Figure 4) does show a weak positive relationship, but the points are close to random.
 
@@ -77,7 +77,9 @@ The main structural limitation is sample size. Most ZIP Codes in the data contai
 pip install -r requirements.txt
 ```
 
-Both `openpyxl` and `xlrd` are needed: the 2019 OSHPD download is a mix of formats, with 511 `.xlsx`/`.xlsm` files and 84 legacy `.xls` files.
+Both `openpyxl` and `xlrd` are needed: the 2019 OSHPD download is a mix of formats, with 511 `.xlsx`/`.xlsm` files and 84 legacy `.xls` files. (Note: `read_OSHPD()` deliberately preserves the original case-sensitive extension check, which skips the 6 uppercase `.XLSX` and 2 `.xlsm` files, so the parsed output matches the committed CSVs.)
+
+The notebooks were modernized in August 2026 to run under current pandas (≥2, verified on 3.0.2): the removed `.any(1)` call, the copy-on-write-unsafe in-place column coalesce, and the bare `except` in `read_OSHPD()` were all replaced, and the analysis notebook's estimators are now seeded so the reported results reproduce exactly from a fresh clone.
 
 To knit the report you also need R with `rmarkdown` and `knitr`.
 
@@ -90,13 +92,15 @@ jupyter lab
 ```
 
 - **Collection** — run `data/Data_Collection.ipynb` from within `data/` (it uses relative paths like `Census_Data/...` and `Hospital_Data/...`). Note that `scrap_AHD()` hits a live third-party site; the scraped output is already committed as `data/Hospital_Data/AHD_list.csv`.
+
+  ⚠️ **The committed CSVs are the canonical 2021 dataset.** Re-running `read_OSHPD()` on a different machine can produce a slightly different `OSHPD_list.csv`: the "keep first duplicate" rule depends on `os.walk` directory order, and current Excel engines successfully read a few workbooks the 2021 environment silently skipped (a re-run in 2026 differed for 9 of 318 hospitals). `Final_Pricing.csv` is unaffected by a notebook re-run because it is built from the committed `OSHPD_ZipCode_list.csv` — verified to reproduce byte-identically. If you *intend* to re-parse, run `build_oshpd_zipcode_list.py` afterwards and expect downstream numbers to shift slightly.
 - **ZIP Code join** — if `Hospital_Data/OSHPD_list.csv` changes, regenerate the ZIP-coded version before running the analysis:
   ```bash
   cd data && python build_oshpd_zipcode_list.py
   ```
   It fails loudly rather than emitting blank ZIP Codes if a hospital is missing from `OSHPD_ZipCode_lookup.csv`.
 - **Analysis** — run `analysis/Data_Analysis.ipynb`, which reads `../data/Hospital_Data/Final_Pricing.csv`.
-- **Report** — `report/ripper_ryan_final_report.Rmd` knits to HTML using `report/style.css`. The figure paths in the `.Rmd` are absolute (`/Users/ryanripper/Desktop/PPOL_564/...`) and need to be repointed at `report/images/` before it will knit elsewhere. A pre-rendered `report/ripper_ryan_final_report.html` is committed if you just want to read it.
+- **Report** — `report/ripper_ryan_final_report.Rmd` knits to HTML using `report/style.css` (figure paths are relative to `report/`, so it knits from a fresh clone). A pre-rendered `report/ripper_ryan_final_report.html` is committed if you just want to read it. Note the committed report text predates the seeded re-run and still names KNN as the best model; see Results above.
 
 ## Project structure
 
@@ -121,15 +125,14 @@ jupyter lab
 ├── presentation/
 │   ├── presentation.ipynb                # 12/01/2021 in-class slides (nbconvert slideshow)
 │   ├── CA_Hosps.PNG
-│   ├── ripper_ryan_rar164/               # Submitted bundle incl. Presentation_Movie.mp4
-│   └── ripper_ryan_rar164.zip            # Same bundle, zipped
+│   └── ripper_ryan_rar164/               # Submitted bundle incl. Presentation_Movie.mp4
 ├── report/
 │   ├── ripper_ryan_final_report.Rmd      # 12/16/2021 final report source
 │   ├── ripper_ryan_final_report.html     # Rendered report
 │   ├── style.css
 │   ├── images/                           # Figures 1–4
-│   ├── ripper_ryan_rar164/               # Submitted bundle incl. data
-│   └── ripper_ryan_rar164.zip            # Same bundle, zipped
+│   └── ripper_ryan_rar164/               # Submitted bundle (27 MB Census CSV deduplicated; see its Data/README.md)
+├── LICENSE
 ├── requirements.txt
 └── README.md
 ```
