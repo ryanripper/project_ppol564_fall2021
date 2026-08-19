@@ -1,5 +1,11 @@
+# The notebooks were modernized (Aug 2026) to run on current library versions
+# and verified end-to-end with: pandas 3.0.2, numpy 2.4.4, scikit-learn 1.8.0,
+# plotnine 0.15.8, matplotlib 3.10.9, openpyxl 3.1.5, xlrd 2.0.2,
+# requests 2.33.1, beautifulsoup4 4.14.3, missingno 0.5.2.
+# Lower bounds below mark the APIs the code now relies on.
+
 # Data collection (data/Data_Collection.ipynb)
-pandas
+pandas>=2.1
 numpy
 requests
 beautifulsoup4
@@ -8,12 +14,12 @@ beautifulsoup4
 # The 2019 download is a mix of formats: openpyxl handles .xlsx/.xlsm,
 # xlrd handles the 84 legacy .xls files.
 openpyxl
-xlrd
+xlrd>=2.0
 
 # Analysis and modeling (analysis/Data_Analysis.ipynb)
-scikit-learn
+scikit-learn>=1.4
 missingno
-plotnine
+plotnine>=0.13
 matplotlib
 
 # Notebook environment
