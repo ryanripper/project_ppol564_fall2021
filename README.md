@@ -73,11 +73,11 @@ The main structural limitation is sample size. Most ZIP Codes in the data contai
 
 ## Requirements
 
-No `requirements.txt` is committed. To run the notebooks:
-
 ```bash
-pip install pandas numpy scikit-learn beautifulsoup4 requests plotnine missingno openpyxl xlrd jupyter
+pip install -r requirements.txt
 ```
+
+Both `openpyxl` and `xlrd` are needed: the 2019 OSHPD download is a mix of formats, with 511 `.xlsx`/`.xlsm` files and 84 legacy `.xls` files.
 
 To knit the report you also need R with `rmarkdown` and `knitr`.
 
@@ -130,6 +130,7 @@ jupyter lab
 │   ├── images/                           # Figures 1–4
 │   ├── ripper_ryan_rar164/               # Submitted bundle incl. data
 │   └── ripper_ryan_rar164.zip            # Same bundle, zipped
+├── requirements.txt
 └── README.md
 ```
 
