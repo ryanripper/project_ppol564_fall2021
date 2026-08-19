@@ -132,7 +132,6 @@ jupyter lab
 │   ├── style.css
 │   ├── images/                           # Figures 1–4
 │   └── ripper_ryan_rar164/               # Submitted bundle (27 MB Census CSV deduplicated; see its Data/README.md)
-├── LICENSE
 ├── requirements.txt
 └── README.md
 ```
