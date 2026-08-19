@@ -78,17 +78,17 @@ We begin by exploring the data we collected, where we explore the split training
 
 First, we consider the independent variables that we will factor into our machine-learning models and see if they require any form of pre-processing to accurately work in our modeling framework.
 
-![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_1.png)
+![](images/Figure_1.png)
 
 From Figure 1, we observe the distributions of the two continuous, independent variables, Mean Household Income by ZIP Code and Median Household Income by ZIP Code. We observe a similar distribution for both variables where we see a right-skew to the household income values. Because of these right-skewed distributions, we consider log transforming the income variables.
 
-![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_2.png)
+![](images/Figure_2.png)
 
 From Figure 2, we observe the distributions of the logged-continuous, independent variables, Mean Household Income by ZIP Code and Median Household Income by ZIP Code. Once we log transformed our continuous, independent variables, we now observe symmetrical distributions. Since they are symmetric, we will not need to convert these variables into categorical ones where we would have needed to divide the distribution into several buckets and then place each observation into the corresponding bucket.
 
 We now analyze our geographic variable, the associated ZIP Code of each hospital, using the below figure.
 
-![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_3.png)
+![](images/Figure_3.png)
 
 From Figure 3, we observe the distribution of ZIP Codes of hospitals across California we have collected. We observe that a majority of the ZIP Codes only have one hospital within the corresponding boundaries where only several, specifically 92307 and 95823, have more than two hospitals within the ZIP Code boundaries. ZIP code 92307 is located within San Bernadino County, encompassing a large portion of Southern California. ZIP Code 95823 is located within Sacramento County. We would expect multiple hospitals to be located in these particular ZIP Codes since they encompass large portions of the state with significant populations. It is worrying that a majority of the ZIP Codes in our data only have one hospital, potentially causing our model to lose predictive power. Since ZIP Code is not a continuous variable nor is it an ordinal variable, we must convert all ZIP Codes in our data to categorical variables where we consider the ZIP Code 90015 as our reference against every other ZIP Code.
 
@@ -116,7 +116,7 @@ Upon observing the results from our best performing model, we obtained worrisome
 
 We address the negative $R^2$ value. Since we used the sklearn module when performing our analysis, the $R^2$ score may be negative where it need not be the square of a quantity R. By definition, $R^2$ is the comparison of a model's fit to a model fitting a single constant, both by minimizing a squared loss, as we did in our analysis. Since we are performing cross-validation with left-out data, the mean of the test data could be significantly different from the mean of the training data. With such a difference between test and training data, we could cause a higher value of squared error of the prediction values versus simply predicting the mean of the test data, which will not necessarily give us any insight into pricing at the individual hospital. Thus, we could ultimately obtain a negative $R^2$, as is the case for this research. Ultimately, our best model may necessarily be over-fitting the data where our independent variables do not explain healthcare pricing at all.
 
-![](/Users/ryanripper/Desktop/PPOL_564/project_ppol564_fall2021/report/images/Figure_4.png)
+![](images/Figure_4.png)
 
 In Figure 4, we see the relationship between the observed prices against the predicted prices for hospitals collected across California. Even though we did observe a negative $R^2$ value, we do observe a positive relationship between the observed and predicted values for pricing a computed tomography of the head or brain. Upon further visual analysis of the figure, we observe that the relationship is relatively week but we do see a relationship. This could be a signifier to further our research by including additional observations and factors to include into our models. We also observe the points across the scatter plot are relatively random, potentially giving us better insight into why our model could have over-fit our test data where the predictors do not give insight to the outcome.
 
