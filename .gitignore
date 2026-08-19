@@ -1,2 +1,7 @@
 .DS_Store
 .ipynb_checkpoints
+
+# Windows Explorer thumbnail caches -- 215 of these were committed alongside the
+# OSHPD chargemaster downloads.
+Thumbs.db
+ehthumbs.db
