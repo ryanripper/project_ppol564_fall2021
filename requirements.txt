@@ -1,0 +1,20 @@
+# Data collection (data/Data_Collection.ipynb)
+pandas
+numpy
+requests
+beautifulsoup4
+
+# Reading the OSHPD chargemaster files.
+# The 2019 download is a mix of formats: openpyxl handles .xlsx/.xlsm,
+# xlrd handles the 84 legacy .xls files.
+openpyxl
+xlrd
+
+# Analysis and modeling (analysis/Data_Analysis.ipynb)
+scikit-learn
+missingno
+plotnine
+matplotlib
+
+# Notebook environment
+jupyter
