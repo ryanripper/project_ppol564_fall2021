@@ -34,7 +34,11 @@ The original plan was to use HCPCS 45380 (colonoscopy with biopsy), but a colono
 
 **Final modeling dataset** (`data/Hospital_Data/Final_Pricing.csv`): hospital name, ZIP Code, line charge for 70450, and mean and median household income for that ZIP Code. Hospital websites were collected during scraping but are not carried into the model.
 
-ZIP Codes reach the pricing data through `data/Hospital_Data/OSHPD_ZipCode_list.csv`, which the collection notebook reads but never writes — that file was assembled outside the committed pipeline.
+ZIP Codes reach the pricing data through `data/Hospital_Data/OSHPD_ZipCode_list.csv`. Neither AHD nor the OSHPD chargemaster files carry a ZIP Code, so the hospital-to-ZIP mapping was researched by hand. That manual work is committed as `data/Hospital_Data/OSHPD_ZipCode_lookup.csv`, and `data/build_oshpd_zipcode_list.py` performs the join, so the file is regenerable from a fresh clone:
+
+```
+OSHPD_list.csv  +  OSHPD_ZipCode_lookup.csv  →  OSHPD_ZipCode_list.csv
+```
 
 ## Method
 
@@ -86,6 +90,11 @@ jupyter lab
 ```
 
 - **Collection** — run `data/Data_Collection.ipynb` from within `data/` (it uses relative paths like `Census_Data/...` and `Hospital_Data/...`). Note that `scrap_AHD()` hits a live third-party site; the scraped output is already committed as `data/Hospital_Data/AHD_list.csv`.
+- **ZIP Code join** — if `Hospital_Data/OSHPD_list.csv` changes, regenerate the ZIP-coded version before running the analysis:
+  ```bash
+  cd data && python build_oshpd_zipcode_list.py
+  ```
+  It fails loudly rather than emitting blank ZIP Codes if a hospital is missing from `OSHPD_ZipCode_lookup.csv`.
 - **Analysis** — run `analysis/Data_Analysis.ipynb`, which reads `../data/Hospital_Data/Final_Pricing.csv`.
 - **Report** — `report/ripper_ryan_final_report.Rmd` knits to HTML using `report/style.css`. The figure paths in the `.Rmd` are absolute (`/Users/ryanripper/Desktop/PPOL_564/...`) and need to be repointed at `report/images/` before it will knit elsewhere. A pre-rendered `report/ripper_ryan_final_report.html` is committed if you just want to read it.
 
@@ -98,11 +107,13 @@ jupyter lab
 │   └── project_proposal.html
 ├── data/
 │   ├── Data_Collection.ipynb             # AHD scrape, OSHPD parse, ACS join → Final_Pricing.csv
+│   ├── build_oshpd_zipcode_list.py       # OSHPD_list + ZIP lookup → OSHPD_ZipCode_list.csv
 │   ├── Census_Data/                      # ACS S1901 extract + metadata, CA ZIP Code list
 │   └── Hospital_Data/
 │       ├── AHD_list.csv                  # Scraped California hospital list
 │       ├── OSHPD_list.csv                # Parsed 70450 prices by hospital
-│       ├── OSHPD_ZipCode_list.csv        # Same, with ZIP Codes attached
+│       ├── OSHPD_ZipCode_lookup.csv      # Hand-curated HospitalName → ZipCode mapping
+│       ├── OSHPD_ZipCode_list.csv        # Same as OSHPD_list, with ZIP Codes attached
 │       ├── Final_Pricing.csv             # Modeling dataset
 │       └── OSHPD_2019/                   # 363 per-hospital chargemaster directories
 ├── analysis/
