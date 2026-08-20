@@ -1,4 +1,4 @@
-# project_ppol564_fall2021
+# hospital_pricing_dynamics_fall2021
 
 **Socioeconomic and Geographic Factors and the Relationship to Hospital Pricing**
 
